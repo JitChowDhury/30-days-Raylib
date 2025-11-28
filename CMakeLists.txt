@@ -12,3 +12,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add daily projects
 add_subdirectory(day01)
+add_subdirectory(day02)
