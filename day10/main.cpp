@@ -1,6 +1,8 @@
 #include "raylib.h"
 #include "raymath.h"
 
+#include <vector>
+
 enum State
 {
   PATROL,
@@ -10,22 +12,27 @@ enum State
 struct Enemy
 {
   // patrol points
-  Vector2 pointA{100, 100};
-  Vector2 pointB{500, 500};
+  Vector2 pointA;
+  Vector2 pointB;
   // Enemy Datas
-  Vector2 position{pointA.x, pointA.y};
-  float size{20.f};
-  float speed{100.f};
-  float baseSpeed{speed};
+  Vector2 position;
+  float size{};
+  float speed{};
+  float baseSpeed{};
 
   // patrol behaviour
   int direction{+1};
   float idleDuration{2.f};
-  int idleTimer{};
+  float idleTimer{0.f};
 
   float chaseRange{100.f};
 
   State state{PATROL};
+
+  Enemy(Vector2 a, Vector2 b, float s = 20.f, float _speed = 100.f) : pointA(a), pointB(b), size(s), speed(_speed), baseSpeed(_speed)
+  {
+    position = pointA;
+  }
 
   void Update(Vector2 playerPos)
   {
@@ -39,26 +46,37 @@ struct Enemy
     switch (state)
     {
     case PATROL:
-      Patrol(dt);
+      Patrol(dt, distance);
       break;
     case CHASE:
       Chase(playerPos, dt);
+      speed = baseSpeed;
       break;
     };
   }
 
-  void Patrol(float dt)
+  void Patrol(float dt, float distance)
   {
     position.x += direction * speed * dt;
 
     if (position.x >= pointB.x)
     {
-      HandleIdleState(-1, dt);
+      HandleIdleState(-1, dt, distance);
+    }
+    else if (position.x <= pointA.x)
+    {
+      HandleIdleState(+1, dt, distance);
     }
   }
 
-  void HandleIdleState(int newDirection, float dt)
+  void HandleIdleState(int newDirection, float dt, float distance)
   {
+    if (distance < chaseRange)
+    {
+      state = CHASE;
+      speed = baseSpeed;
+      return;
+    }
 
     if (idleTimer >= idleDuration)
     {
@@ -120,20 +138,32 @@ int main()
   float playerSpeed{200.f};
   float playerSize{40.f};
   Vector2 playerPos{WINDOW_WIDTH / 2 - playerSize, WINDOW_HEIGHT / 2 - playerSize};
+  //------------ENEMY----------------
+  std::vector<Enemy> enemies;
 
-  Enemy enemy;
+  enemies.emplace_back(Vector2{100, 100}, Vector2{300, 100}, 10.f);
+  enemies.emplace_back(Vector2{200, 300}, Vector2{500, 300}, 20.f);
+  enemies.emplace_back(Vector2{50, 400}, Vector2{250, 400}, 12.f);
 
   while (!WindowShouldClose())
   {
 
     HandleInput(playerPos, playerSpeed, playerSize);
-    enemy.Update(playerPos);
+
+    for (auto &enemy : enemies)
+    {
+      enemy.Update(playerPos);
+    }
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
     DrawRectangleV(playerPos, {playerSize, playerSize}, ORANGE);
-    DrawRectangleV(enemy.position, {enemy.size, enemy.size}, RED);
+
+    for (auto &enemy : enemies)
+    {
+      DrawRectangleV(enemy.position, {enemy.size, enemy.size}, RED);
+    }
 
     EndDrawing();
   }
