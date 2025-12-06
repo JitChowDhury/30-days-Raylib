@@ -2,13 +2,13 @@
 #include "raymath.h"
 
 #include <vector>
+#include <string>
 
 enum State
 {
   PATROL,
   CHASE,
 };
-
 struct Enemy
 {
   // patrol points
@@ -98,6 +98,51 @@ struct Enemy
     position.y += direction.y * speed * dt;
   }
 };
+
+struct Bullet
+{
+  Vector2 position{};
+  Vector2 velocity{};
+  float radius;
+  float speed;
+  bool isActive;
+
+  void Update()
+  {
+
+    position.x += velocity.x * speed * GetFrameTime();
+    position.y += velocity.y * speed * GetFrameTime();
+  }
+
+  bool IsOutsideScreen()
+  {
+    if (position.x + radius < 0 || position.x - radius > GetScreenWidth() || position.y + radius < 0 || position.y - radius > GetScreenHeight())
+    {
+      return true;
+    }
+    return false;
+  }
+
+  bool IsEnemyCollisin(std::vector<Enemy> &enemies, int &score)
+  {
+    for (auto it = enemies.begin(); it != enemies.end();)
+    {
+      Enemy &enemy = *it;
+      if (CheckCollisionCircleRec(position, radius, Rectangle{enemy.position.x, enemy.position.y, enemy.size, enemy.size}))
+      {
+        it = enemies.erase(it);
+        score += 10;
+        return true;
+      }
+      else
+      {
+        ++it;
+      }
+    }
+    return false;
+  }
+};
+
 void HandleInput(Vector2 &playerPos, float speed, float playerSize)
 {
   Vector2 velocity{};
@@ -138,6 +183,7 @@ int main()
   float playerSpeed{200.f};
   float playerSize{40.f};
   Vector2 playerPos{WINDOW_WIDTH / 2 - playerSize, WINDOW_HEIGHT / 2 - playerSize};
+  int score{0};
   //------------ENEMY----------------
   std::vector<Enemy> enemies;
 
@@ -145,8 +191,40 @@ int main()
   enemies.emplace_back(Vector2{200, 300}, Vector2{500, 300}, 20.f);
   enemies.emplace_back(Vector2{50, 400}, Vector2{250, 400}, 12.f);
 
+  //------------BULLETS---------------
+
+  std::vector<Bullet> bullets;
+
   while (!WindowShouldClose())
   {
+
+    if (IsMouseButtonPressed(0))
+    {
+      Vector2 mousePos = GetMousePosition();
+      Vector2 direction = Vector2Normalize(Vector2Subtract(mousePos, playerPos));
+      Bullet bullet{
+          playerPos,
+          direction,
+          5.f,
+          200,
+          true};
+
+      bullets.push_back(bullet);
+    }
+
+    for (auto it = bullets.begin(); it != bullets.end();)
+    {
+      Bullet &bullet = *it;
+      bullet.Update();
+      if (bullet.IsOutsideScreen() || bullet.IsEnemyCollisin(enemies, score))
+      {
+        it = bullets.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
 
     HandleInput(playerPos, playerSpeed, playerSize);
 
@@ -164,6 +242,13 @@ int main()
     {
       DrawRectangleV(enemy.position, {enemy.size, enemy.size}, RED);
     }
+
+    for (auto &bullet : bullets)
+    {
+      DrawCircleV(bullet.position, bullet.radius, PURPLE);
+    }
+    std::string message = "Score: " + std::to_string(score);
+    DrawText(message.c_str(), 40, 40, 24, BLACK);
 
     EndDrawing();
   }
