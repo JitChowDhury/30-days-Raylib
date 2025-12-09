@@ -12,7 +12,7 @@ struct Player
   Vector2 midPosition = {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f};
   float playerWidth{20}, playerHeight{30};
   Vector2 playerPosition{midPosition.x - playerWidth, midPosition.y - playerHeight};
-  Color playerColor{RED};
+  Color playerColor{PURPLE};
 
   float speed{200.f};
 
@@ -65,6 +65,15 @@ struct Bullet
     position.x += velocity.x * speed * GetFrameTime();
     position.y += velocity.y * speed * GetFrameTime();
   }
+
+  bool IsOutsideScreen()
+  {
+    if (position.x + radius < 0 || position.x - radius > GetScreenWidth() || position.y + radius < 0 || position.y - radius > GetScreenHeight())
+    {
+      isActive = false;
+    }
+    isActive = true;
+  }
 };
 
 int main()
@@ -84,7 +93,7 @@ int main()
     if (IsMouseButtonPressed(0))
     {
       Bullet bullet;
-      bullet.position = player.playerPosition;
+      bullet.position = {player.playerPosition.x + player.playerWidth / 2, player.playerPosition.y + player.playerHeight / 2};
       Vector2 dir = Vector2Normalize(Vector2Subtract(GetMousePosition(), player.playerPosition));
       bullet.velocity = dir;
       bullets.push_back(bullet);
@@ -92,7 +101,10 @@ int main()
 
     for (auto &bullet : bullets)
     {
-      bullet.Update();
+      if (bullet.isActive)
+      {
+        bullet.Update();
+      }
     }
 
     BeginDrawing();
@@ -100,7 +112,10 @@ int main()
     DrawRectangleV(player.playerPosition, {player.playerWidth, player.playerHeight}, player.playerColor);
     for (auto &bullet : bullets)
     {
-      DrawCircleV(bullet.position, bullet.radius, RED);
+      if (bullet.isActive)
+      {
+        DrawCircleV(bullet.position, bullet.radius, RED);
+      }
     }
 
     EndDrawing();
