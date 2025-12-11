@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <string>
+#include <iomanip>
+#include <sstream>
 
 enum State
 {
@@ -76,9 +79,9 @@ struct Enemy
     Rec = Rectangle{position.x, position.y, size, size};
   }
 
-  void Update(Vector2 playerPos, std::vector<Bullet> &bullets)
+  void Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score)
   {
-    if (CheckCollision(bullets))
+    if (CheckCollision(bullets, score))
     {
       return;
     }
@@ -122,7 +125,7 @@ struct Enemy
     position.y += direction.y * speed * GetFrameTime();
   }
 
-  bool CheckCollision(std::vector<Bullet> &bullets)
+  bool CheckCollision(std::vector<Bullet> &bullets, int &score)
   {
     Rec.x = position.x;
     Rec.y = position.y;
@@ -133,6 +136,7 @@ struct Enemy
       {
 
         it = bullets.erase(it);
+        score += 10;
         isActive = false;
         return true;
       }
@@ -193,6 +197,16 @@ float GetrandomSize()
 {
   return static_cast<float>(10 + rand() % (50 - 10 + 1));
 }
+
+void SpawnEnemy(std::vector<Enemy> &enemies, int &numOfEnemies)
+{
+  for (int i = 0; i < numOfEnemies; i++)
+  {
+    Enemy enemy{100.f, GetrandomSize()};
+    enemies.push_back(enemy);
+  }
+  numOfEnemies += 2;
+}
 int main()
 {
 
@@ -209,17 +223,29 @@ int main()
   //-----------------ENEMY---------------------->
 
   std::vector<Enemy> enemies;
-
-  for (int i = 0; i < 3; i++)
-  {
-    Enemy enemy{100.f, GetrandomSize()};
-    enemies.push_back(enemy);
-  }
-
+  int numEnemies = 1;
+  SpawnEnemy(enemies, numEnemies);
+  //----------------SCORESYSTEM------------------->
+  float waitTimer = 2.5f;
+  float actualTimer = waitTimer;
+  int score = 0;
   //-----------------MAIN LOOP----------->
   while (!WindowShouldClose())
   {
+
     player.Update();
+    if (enemies.size() == 0)
+    {
+      if (actualTimer > 0.f)
+      {
+        actualTimer -= GetFrameTime();
+      }
+      else
+      {
+        SpawnEnemy(enemies, numEnemies);
+        actualTimer = waitTimer;
+      }
+    }
 
     for (auto it = enemies.begin(); it != enemies.end();)
     {
@@ -229,7 +255,7 @@ int main()
       }
       else
       {
-        (*it).Update(player.playerPosition, bullets);
+        (*it).Update(player.playerPosition, bullets, score);
         ++it;
       }
     }
@@ -269,6 +295,13 @@ int main()
         DrawCircleV(bullet.position, bullet.radius, RED);
       }
     }
+
+    std::string message = "Score: " + std::to_string(score);
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(2) << actualTimer;
+    std::string timerMessage = "Timer: " + ss.str();
+    DrawText(message.c_str(), 40, 40, 24, BLACK);
+    DrawText(timerMessage.c_str(), 400, 40, 24, BLACK);
 
     EndDrawing();
   }
