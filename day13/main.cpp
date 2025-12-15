@@ -233,6 +233,11 @@ int main()
   while (!WindowShouldClose())
   {
 
+    if (IsKeyPressed(KEY_F11))
+    {
+      ToggleBorderlessWindowed();
+    }
+
     player.Update();
     if (enemies.size() == 0)
     {
@@ -301,7 +306,7 @@ int main()
     ss << std::fixed << std::setprecision(2) << actualTimer;
     std::string timerMessage = "Timer: " + ss.str();
     DrawText(message.c_str(), 40, 40, 24, BLACK);
-    DrawText(timerMessage.c_str(), 400, 40, 24, BLACK);
+    DrawText(timerMessage.c_str(), GetScreenWidth() - 200, 40, 24, BLACK);
 
     EndDrawing();
   }
