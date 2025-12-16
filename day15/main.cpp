@@ -21,9 +21,11 @@ struct Bullet
 {
   Vector2 position{};
   Vector2 velocity{};
-  float speed{100.f};
+  float speed{};
   bool isActive{true};
   float radius{5.f};
+  float damage;
+  Color color{};
 
   void Update()
   {
@@ -57,6 +59,7 @@ struct Enemy
   float chaseRange{100.f};
   int direction{+1};
   bool isActive{true};
+  int health{10};
 
   float speed;
   float size;
@@ -110,6 +113,11 @@ struct Enemy
       ChaseState(playerPos);
       break;
     }
+
+    if (health <= 0)
+    {
+      isActive = false;
+    }
   }
 
   void PatrolState(int newDirection)
@@ -136,9 +144,10 @@ struct Enemy
       if (CheckCollisionCircleRec(it->position, it->radius, Rec))
       {
 
+        health -= (*it).damage;
         it = bullets.erase(it);
         score += 10;
-        isActive = false;
+        // isActive = false;
         return true;
       }
       else
@@ -165,6 +174,13 @@ struct Player
   int currentHp = maxHp;
   float invincibleTimer{};
   float invincibleDuration{0.7f};
+
+  // weapon stat
+  int weaponDamage{2};
+  float fireCoolDown{1.f};
+  float fireTimer{0};
+  float bulletSpeed{100.f};
+  Color bulletColor{RED};
 
   void Update(std::vector<Enemy> &enemies)
   {
@@ -267,6 +283,8 @@ int main()
   float waitTimer = 2.5f;
   float actualTimer = waitTimer;
   int score = 0;
+  //-----------------WEAPON SYSTEM------------------>
+  bool isUpgradeApplied{false};
   //-----------------MAIN LOOP----------->
   while (!WindowShouldClose())
   {
@@ -302,15 +320,29 @@ int main()
         ++it;
       }
     }
+    if (IsKeyPressed(KEY_N) && isUpgradeApplied == false)
+    {
+      player.weaponDamage = 5.f;
+      player.bulletSpeed = 200.f;
+      isUpgradeApplied = true;
+      player.bulletColor = BLUE;
+      player.fireCoolDown =.5f;
+    }
 
-    if (IsMouseButtonPressed(0))
+    if (IsMouseButtonPressed(0) && player.fireTimer <= 0)
     {
       Bullet bullet;
       bullet.position = {player.playerPosition.x + player.playerWidth / 2, player.playerPosition.y + player.playerHeight / 2};
       Vector2 dir = Vector2Normalize(Vector2Subtract(GetMousePosition(), player.playerPosition));
       bullet.velocity = dir;
+      bullet.damage = player.weaponDamage;
+      bullet.speed = player.bulletSpeed;
+      bullet.color = player.bulletColor;
       bullets.push_back(bullet);
+      player.fireTimer = player.fireCoolDown;
     }
+
+    player.fireTimer -= GetFrameTime();
 
     for (auto &bullet : bullets)
     {
@@ -345,7 +377,7 @@ int main()
     {
       if (bullet.isActive)
       {
-        DrawCircleV(bullet.position, bullet.radius, RED);
+        DrawCircleV(bullet.position, bullet.radius, bullet.color);
       }
     }
 
