@@ -7,12 +7,13 @@ Player::Player()
       GetScreenHeight() / 2.f};
 }
 
+// handle inputs and collison each frame
 void Player::Update(std::vector<Enemy> &enemies, std::vector<Bullet> &bullets)
 {
   HandleInput(bullets);
   HandleEnemyCollision(enemies);
 }
-
+// movement input and bullet spawn
 void Player::HandleInput(std::vector<Bullet> &bullets)
 {
   Vector2 velocity{};
@@ -46,7 +47,7 @@ void Player::HandleInput(std::vector<Bullet> &bullets)
     fireTimer = fireCooldown;
   }
 }
-
+// enemy collision
 void Player::HandleEnemyCollision(std::vector<Enemy> &enemies)
 {
   for (auto &enemy : enemies)
@@ -84,6 +85,7 @@ void Player::Reset()
   currentHp = maxHp;
   invincibleTimer = invincibleDuration;
 }
+// weapom upgrade
 void Player::ApplyUpgrade()
 {
   weaponDamage = 5;

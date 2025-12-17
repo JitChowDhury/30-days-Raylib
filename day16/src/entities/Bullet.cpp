@@ -8,11 +8,8 @@ void Bullet::Update()
   if (IsOutsideScreen())
     isActive = false;
 }
-
+// checks if its outside the screen or not
 bool Bullet::IsOutsideScreen() const
 {
-  return position.x + radius < 0 ||
-         position.x - radius > GetScreenWidth() ||
-         position.y + radius < 0 ||
-         position.y - radius > GetScreenHeight();
+  return position.x + radius < 0 || position.x - radius > GetScreenWidth() || position.y + radius < 0 || position.y - radius > GetScreenHeight();
 }
