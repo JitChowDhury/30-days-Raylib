@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 
 #include "entities/Player.h"
 #include "entities/Enemy.h"
@@ -15,7 +16,8 @@ public:
 private:
   // Game objects
   Player player;
-  std::vector<Enemy> enemies;
+  // std::vector<Enemy> enemies;
+  std::vector<std::unique_ptr<Enemy>> enemies;
   std::vector<Bullet> bullets;
 
   // Game state

@@ -10,8 +10,8 @@ static Vector2 GetRandomPosition(float size)
 }
 // constructor
 // Choose tow random position and if pointA is greater then swaps also sets the rectangle  to position
-Enemy::Enemy(float spd, float sz)
-    : speed(spd), size(sz)
+Enemy::Enemy(float spd, float sz, int hp)
+    : speed(spd), size(sz), health(hp)
 {
   pointA = GetRandomPosition(size);
   pointB = GetRandomPosition(size);
@@ -27,8 +27,10 @@ Enemy::Enemy(float spd, float sz)
 // also sets active flag to false if health = 0;
 void Enemy::Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score)
 {
-  if (HandleBulletCollision(bullets, score))
+  if (!isActive)
     return;
+
+  HandleBulletCollision(bullets, score);
 
   float distance = Vector2Distance(position, playerPos);
   state = (distance < chaseRange) ? EnemyState::Chase : EnemyState::Patrol;
@@ -82,12 +84,7 @@ bool Enemy::HandleBulletCollision(std::vector<Bullet> &bullets, int &score)
 }
 
 // Draw the enemy on screen
-void Enemy::Draw() const
-{
-  DrawRectangleV(position, {size, size}, ORANGE);
-}
-// return the rectangle
-Rectangle Enemy::GetRect()
-{
-  return collider;
-}
+// void Enemy::Draw() const
+// {
+//   DrawRectangleV(position, {size, size}, ORANGE);
+// }

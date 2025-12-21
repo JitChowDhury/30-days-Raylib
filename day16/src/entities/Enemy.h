@@ -13,15 +13,16 @@ enum class EnemyState
 class Enemy
 {
 public:
-  Enemy(float speed, float size);
+  virtual ~Enemy() = default;
+  virtual void Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score);
+  virtual void Draw() const = 0;
 
-  void Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score);
-  void Draw() const;
-  Rectangle GetRect();
+  Rectangle GetRect() const { return collider; }
 
   bool IsActive() const { return isActive; }
 
-private:
+protected:
+  Enemy(float speed, float size, int health);
   Vector2 position{};
   Rectangle collider{};
   Vector2 pointA{}, pointB{};

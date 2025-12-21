@@ -1,6 +1,8 @@
 #include "core/Game.h"
 #include "raylib.h"
 #include "utils/Spawn.h"
+#include "entities/FastEnemy.h"
+#include "entities/TankyEnemy.h"
 
 Game::Game()
 {
@@ -38,11 +40,11 @@ void Game::Update()
   // Enemy update & cleanup
   for (auto it = enemies.begin(); it != enemies.end();)
   {
-    if (!it->IsActive())
+    if (!(*it)->IsActive())
       it = enemies.erase(it);
     else
     {
-      it->Update(player.GetPosition(), bullets, score);
+      (*it)->Update(player.GetPosition(), bullets, score);
       ++it;
     }
   }
@@ -76,7 +78,7 @@ void Game::Draw()
   player.Draw();
 
   for (auto &enemy : enemies)
-    enemy.Draw();
+    enemy->Draw();
 
   for (auto &bullet : bullets)
     if (bullet.isActive)
@@ -90,10 +92,7 @@ void Game::Draw()
 // enemies spawn
 void Game::SpawnEnemies()
 {
-  for (int i = 0; i < enemyCount; i++)
-  {
-    enemies.emplace_back(100.f, GetRandomSize());
-  }
+  SpawnEnemy(enemies, enemyCount);
   enemyCount += 2;
 }
 // game erset

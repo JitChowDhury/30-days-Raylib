@@ -4,13 +4,14 @@
 #include <vector>
 #include "Enemy.h"
 #include "Bullet.h"
+#include <memory>
 
 class Player
 {
 public:
   Player();
 
-  void Update(std::vector<Enemy> &enemies, std::vector<Bullet> &bullets);
+  void Update(std::vector<std::unique_ptr<Enemy>> &enemies, std::vector<Bullet> &bullets);
   void Draw() const;
   void Reset();
   void ApplyUpgrade();
@@ -41,5 +42,5 @@ private:
   Color bulletColor{RED};
 
   void HandleInput(std::vector<Bullet> &bullets);
-  void HandleEnemyCollision(std::vector<Enemy> &enemies);
+  void HandleEnemyCollision(std::vector<std::unique_ptr<Enemy>> &enemies);
 };

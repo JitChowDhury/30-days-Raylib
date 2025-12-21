@@ -1,5 +1,4 @@
 #include "Player.h"
-
 Player::Player()
 {
   position = {
@@ -8,7 +7,7 @@ Player::Player()
 }
 
 // handle inputs and collison each frame
-void Player::Update(std::vector<Enemy> &enemies, std::vector<Bullet> &bullets)
+void Player::Update(std::vector<std::unique_ptr<Enemy>> &enemies, std::vector<Bullet> &bullets)
 {
   HandleInput(bullets);
   HandleEnemyCollision(enemies);
@@ -48,13 +47,13 @@ void Player::HandleInput(std::vector<Bullet> &bullets)
   }
 }
 // enemy collision
-void Player::HandleEnemyCollision(std::vector<Enemy> &enemies)
+void Player::HandleEnemyCollision(std::vector<std::unique_ptr<Enemy>> &enemies)
 {
   for (auto &enemy : enemies)
   {
     Rectangle playerRec{position.x, position.y, size.x, size.y};
 
-    if (CheckCollisionRecs(playerRec, enemy.IsActive() ? enemy.GetRect() : Rectangle{}))
+    if (CheckCollisionRecs(playerRec, enemy->IsActive() ? enemy->GetRect() : Rectangle{}))
     {
       if (invincibleTimer <= 0)
       {
