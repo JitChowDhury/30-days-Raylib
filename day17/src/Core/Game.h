@@ -18,7 +18,8 @@ private:
   Player player;
   // std::vector<Enemy> enemies;
   std::vector<std::unique_ptr<Enemy>> enemies;
-  std::vector<Bullet> bullets;
+  std::vector<Bullet> playerBullets;
+  std::vector<Bullet> enemyBullets;
 
   // Game state
   int score{0};

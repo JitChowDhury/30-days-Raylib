@@ -25,20 +25,21 @@ Enemy::Enemy(float spd, float sz, int hp)
 
 // changes state based on distance between player and enemy
 // also sets active flag to false if health = 0;
-void Enemy::Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score)
+void Enemy::Update(Player &player, std::vector<Bullet> &playerBullets, int &score, std::vector<Bullet> &enemyBullets)
 {
   if (!isActive)
     return;
 
-  HandleBulletCollision(bullets, score);
+  HandleBulletCollision(playerBullets, score);
+  HandlePlayerBulletCollision(player, enemyBullets);
 
-  float distance = Vector2Distance(position, playerPos);
+  float distance = Vector2Distance(position, player.GetPosition());
   state = (distance < chaseRange) ? EnemyState::Chase : EnemyState::Patrol;
 
   if (state == EnemyState::Patrol)
     Patrol();
   else
-    Chase(playerPos);
+    Chase(player.GetPosition(), enemyBullets);
 
   collider.x = position.x;
   collider.y = position.y;
@@ -57,11 +58,40 @@ void Enemy::Patrol()
     direction = 1;
 }
 // chase player if distance is less that chase distance
-void Enemy::Chase(Vector2 playerPos)
+void Enemy::Chase(Vector2 playerPos, std::vector<Bullet> &enemyBullets)
 {
   Vector2 dir = Vector2Normalize(Vector2Subtract(playerPos, position));
   position.x += dir.x * speed * GetFrameTime();
   position.y += dir.y * speed * GetFrameTime();
+  fireTimer -= GetFrameTime();
+  if (fireTimer <= 0)
+  {
+    Bullet bullet;
+    bullet.position = {position.x + size / 2, position.y + size / 2};
+    bullet.velocity = Vector2Normalize(Vector2Subtract(playerPos, position));
+    bullet.speed = 50.f;
+    bullet.damage = 1.f;
+    bullet.color = MAGENTA;
+
+    enemyBullets.push_back(bullet);
+    fireTimer = fireCoolDown;
+  }
+}
+void Enemy::HandlePlayerBulletCollision(Player &player, std::vector<Bullet> &bullets)
+{
+  for (auto it = bullets.begin(); it != bullets.end();)
+  {
+    if (CheckCollisionCircleRec(it->position, it->radius, player.GetPlayerRec()))
+    {
+      it->isActive = false;
+      it = bullets.erase(it);
+      player.Damage(.5f);
+    }
+    else
+    {
+      ++it;
+    }
+  }
 }
 // loops through the bullet list and checks if any bullet touches enemy , if it does then remove that bullet
 bool Enemy::HandleBulletCollision(std::vector<Bullet> &bullets, int &score)

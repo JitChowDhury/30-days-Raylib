@@ -3,18 +3,19 @@
 #include "raymath.h"
 #include <vector>
 #include "Bullet.h"
+#include "Player.h"
 
 enum class EnemyState
 {
   Patrol,
   Chase
 };
-
+class Player;
 class Enemy
 {
 public:
   virtual ~Enemy() = default;
-  virtual void Update(Vector2 playerPos, std::vector<Bullet> &bullets, int &score);
+  virtual void Update(Player &player, std::vector<Bullet> &playerBullets, int &score, std::vector<Bullet> &enemyBullets);
   virtual void Draw() const = 0;
 
   Rectangle GetRect() const { return collider; }
@@ -30,6 +31,8 @@ protected:
   float speed{0.f};
   float size{0.f};
   float chaseRange{100.f};
+  float fireCoolDown{2.f};
+  float fireTimer{0.f};
 
   int direction{1};
   int health{10};
@@ -38,6 +41,7 @@ protected:
   EnemyState state{EnemyState::Patrol};
 
   void Patrol();
-  void Chase(Vector2 playerPos);
+  void Chase(Vector2 playerPos, std::vector<Bullet> &enemyBullets);
   bool HandleBulletCollision(std::vector<Bullet> &bullets, int &score);
+  void HandlePlayerBulletCollision(Player &player, std::vector<Bullet> &bullets);
 };

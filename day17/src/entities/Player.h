@@ -6,6 +6,8 @@
 #include "Bullet.h"
 #include <memory>
 
+class Enemy;
+
 class Player
 {
 public:
@@ -16,7 +18,16 @@ public:
   void Reset();
   void ApplyUpgrade();
   Vector2 GetPosition() const { return position; }
-  int GetHealth() const { return currentHp; }
+  float GetHealth() const { return currentHp; }
+  Rectangle GetPlayerRec()
+  {
+    return {position.x, position.y, size.x, size.y};
+  }
+
+  void Damage(float damageAmount)
+  {
+    currentHp -= damageAmount;
+  }
 
 private:
   Vector2 position{};
@@ -24,9 +35,8 @@ private:
 
   float speed{200.f};
 
-  int maxHp{10};
-  int currentHp{10};
-
+  float maxHp{10.f};
+  float currentHp{10.f};
   float invincibleTimer{0.f};
   float invincibleDuration{0.7f};
 

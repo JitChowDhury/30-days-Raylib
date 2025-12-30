@@ -23,7 +23,7 @@ void Game::Run()
 
 void Game::Update()
 {
-  player.Update(enemies, bullets);
+  player.Update(enemies, playerBullets);
 
   // Enemy wave logic
   if (enemies.empty())
@@ -44,7 +44,7 @@ void Game::Update()
       it = enemies.erase(it);
     else
     {
-      (*it)->Update(player.GetPosition(), bullets, score);
+      (*it)->Update(player, playerBullets, score, enemyBullets);
       ++it;
     }
   }
@@ -57,7 +57,12 @@ void Game::Update()
   }
 
   // Bullet update
-  for (auto &bullet : bullets)
+  for (auto &bullet : playerBullets)
+  {
+    if (bullet.isActive)
+      bullet.Update();
+  }
+  for (auto &bullet : enemyBullets)
   {
     if (bullet.isActive)
       bullet.Update();
@@ -80,12 +85,15 @@ void Game::Draw()
   for (auto &enemy : enemies)
     enemy->Draw();
 
-  for (auto &bullet : bullets)
+  for (auto &bullet : playerBullets)
+    if (bullet.isActive)
+      DrawCircleV(bullet.position, bullet.radius, bullet.color);
+  for (auto &bullet : enemyBullets)
     if (bullet.isActive)
       DrawCircleV(bullet.position, bullet.radius, bullet.color);
 
   DrawText(TextFormat("Score: %d", score), 40, 40, 24, BLACK);
-  DrawText(TextFormat("Health: %d", player.GetHealth()), 40, 70, 24, BLACK);
+  DrawText(TextFormat("Health: %.1f", player.GetHealth()), 40, 70, 24, BLACK);
 
   EndDrawing();
 }
@@ -101,7 +109,7 @@ void Game::Reset()
   score = 0;
   enemyCount = 1;
   enemies.clear();
-  bullets.clear();
+  playerBullets.clear();
   SpawnEnemies();
   player.Reset();
 }
