@@ -273,7 +273,7 @@ int main()
   //-----------------PLAYER---------------------->
   Player player;
   //-----------------BULLETS---------------------->
-  std::vector<Bullet> bullets;
+  std::vector<Bullet> playerBullets;
   //-----------------ENEMY---------------------->
 
   std::vector<Enemy> enemies;
@@ -326,7 +326,7 @@ int main()
       player.bulletSpeed = 200.f;
       isUpgradeApplied = true;
       player.bulletColor = BLUE;
-      player.fireCoolDown =.5f;
+      player.fireCoolDown = .5f;
     }
 
     if (IsMouseButtonPressed(0) && player.fireTimer <= 0)
